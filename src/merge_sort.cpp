@@ -1,73 +1,34 @@
-#include "assignment/insertion_sort.hpp"
-
-#include <utility>  // move, swap
+#include "assignment/merge_sort.hpp"
 
 #include "assignment/partitioning.hpp"  // middle_of
+#include "assignment/merging.hpp"       // merge
 
 namespace assignment {
 
-  int linear_search(const std::vector<int>& arr, int index) {
+  void MergeSort::Sort(std::vector<int>& arr) const {
 
-    // итерация всех предыдущих элементов [0, index - 1] (они находятся в отсортированном порядке)
-    for (int curr_pos = 0; curr_pos < index; curr_pos++) {
-      if (arr[curr_pos] >= arr[index]) return curr_pos;
-      // если текущий элемент меньше или равен вставляемому, позиция для вставки найдена ...
-    }
+    // буфер памяти для операции слияния (merge)
+    std::vector<int> buf(arr.size());
 
-    return index;  // здесь что-то не так ...
+    merge_sort(arr, 0, static_cast<int>(arr.size() - 1), buf);
   }
 
-  int binary_search(const std::vector<int>& arr, int index) {
+  void MergeSort::merge_sort(std::vector<int>& arr, int start, int stop, std::vector<int>& buf) const {
 
-    // начало, конец и середина области поиска места для вставки [0, index - 1]
-    int start = 0 /* здесь что-то не так ... */;
-    int stop = index - 1 /* здесь что-то не так ... */;
-    int middle = middle_of(start, stop) /* здесь что-то не так ... */;
-
-    // ищем до тех пор, пока границы не схлопнулись
-    while (start <= stop) {
-
-      // возвращаем позицию для вставки
-      if (arr[index] == arr[middle]) {
-        return middle /* здесь что-то не так ... */;
-      }
-
-      // обновляем границы области поиска ...
-      if (arr[index] < arr[middle]) {
-        stop = middle - 1;
-      } else {
-        start = middle + 1;
-      }
-
-      // обновляем середину области поиска
-      middle = middle_of(start, stop);  // здесь что-то не так ...
+    // выход из рекурсии: подмассив длины один
+    if (start >= stop) {
+      return;
     }
 
-    // в конечном счете возвращаем начало последней области поиска
-    return start;  // здесь что-то не так ...
+    // вычисляем индекс середины области
+    const int middle = middle_of(start, stop);
+
+    merge_sort(arr, start, middle, buf);
+    merge_sort(arr, middle + 1, stop, buf);
+    merge(arr, start, middle, stop, buf);
+
+    // рекурсивный вызов сортировки левой [start, middle] и правой [middle + 1, stop] подмассивов ...
+    // слияния двух подмассивов [start, middle] и [middle + 1, stop] ...
   }
-
-  void InsertionSort::Sort(std::vector<int>& arr) const {
-
-    // - проходимся по элементам, начиная со второго
-    // - после каждой итерации, слева от index будет формироваться отсортированный массив
-    // - первый элемент слева считается отсортированным
-    for (int index = 1; index < static_cast<int>(arr.size()); index++) {
-
-      // поиск индекса для вставки элемента с индексом index в область [0, index - 1]
-      const int ins_index = searcher_(arr, index);
-
-      if (index == ins_index) continue;
-      int num = arr[index];
-      for (unsigned long long int i = index; i > ins_index; i--) {
-        arr[i] = arr[i - 1];
-      }
-      arr[ins_index] = num;
-      // если индекс вставки не совпадает с текущей позицией элемента,
-      // производим вставку элемента на вычисленную позицию (std::copy или цикл for) ...
-    }
-  }
-
-  InsertionSort::InsertionSort(Searcher searcher) : searcher_{std::move(searcher)} {}
 
 }  // namespace assignment
